@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CloneForge AR Graph</title>
+    <link rel="stylesheet" href="style.css">
+    
+    <!-- AR Dependencies (Local) -->
+    <script src="node_modules/aframe/dist/aframe-master.min.js"></script>
+    <script src="node_modules/ar.js/aframe/build/aframe-ar.js"></script>
+    <script src="node_modules/3d-force-graph-ar/dist/3d-force-graph-ar.min.js"></script>
+    
+</head>
+<body>
+    
+    <div id="graph-container"></div>
+    
+    <div id="ui-layer">
+        <header>
+            <div class="title-container">
+                <h1>CloneForge Matrix</h1>
+                <p class="subtitle">Empathy AI for Mirrored Connections</p>
+            </div>
+            
+            <div class="mode-toggles">
+                <a href="index.html" class="toggle-btn">3D Mode</a>
+                <a href="vr.html" class="toggle-btn">VR Mode</a>
+                <a href="ar.html" class="toggle-btn active">AR Mode</a>
+            </div>
+        </header>
+
+        <div id="info-panel" class="visible">
+            <h2 id="node-title">AR Mode Enabled</h2>
+            <div id="node-desc">Please grant camera permissions if prompted to view the graph in Augmented Reality. Look for the Hiro marker.</div>
+        </div>
+        
+    </div>
+
+    <!-- Data Module -->
+    <script type="module">
+        import { graphData } from './data.js';
+
+        const colors = {
+            1: '#00E5FF', 2: '#FF3366', 3: '#F2C94C', 4: '#27AE60',
+            5: '#9B51E0', 6: '#F2994A', 7: '#56CCF2', 8: '#EB5757'
+        };
+
+        const elem = document.getElementById('graph-container');
+
+        const Graph = ForceGraphAR({ markerId: 'hiro' })(elem)
+            .graphData(graphData)
+            .nodeAutoColorBy('group')
+            .nodeColor(node => colors[node.group] || '#ffffff')
+            .nodeResolution(32)
+            .linkColor(() => 'rgba(255, 255, 255, 0.5)')
+            .linkWidth(2);
+    </script>
+</body>
+</html>

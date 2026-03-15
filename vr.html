@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CloneForge VR Graph</title>
+    <link rel="stylesheet" href="style.css">
+    
+    <!-- VR Dependencies (Local to avoid CDN/CORS issues) -->
+    <script src="node_modules/aframe/dist/aframe-master.min.js"></script>
+    <script src="node_modules/3d-force-graph-vr/dist/3d-force-graph-vr.min.js"></script>
+    
+    <style>
+        /* Hide A-frame debug UI if any */
+        .a-enter-vr { bottom: 20px !important; right: 20px !important; }
+    </style>
+</head>
+<body>
+    
+    <div id="graph-container"></div>
+    
+    <div id="ui-layer">
+        <header>
+            <div class="title-container">
+                <h1>CloneForge Matrix</h1>
+                <p class="subtitle">Empathy AI for Mirrored Connections</p>
+            </div>
+            
+            <div class="mode-toggles">
+                <a href="index.html" class="toggle-btn">3D Mode</a>
+                <a href="vr.html" class="toggle-btn active">VR Mode</a>
+                <a href="ar.html" class="toggle-btn">AR Mode</a>
+            </div>
+        </header>
+
+        <div id="info-panel">
+            <h2 id="node-title">VR Mode Enabled</h2>
+            <div id="node-desc">Put on your headset and click the 'Enter VR' button in the bottom right corner to immerse yourself in the graph.</div>
+        </div>
+        
+    </div>
+
+    <!-- Data Module -->
+    <script type="module">
+        import { graphData } from './data.js';
+
+        const colors = {
+            1: '#00E5FF', 2: '#FF3366', 3: '#F2C94C', 4: '#27AE60',
+            5: '#9B51E0', 6: '#F2994A', 7: '#56CCF2', 8: '#EB5757'
+        };
+
+        const elem = document.getElementById('graph-container');
+
+        const Graph = ForceGraphVR()(elem)
+            .graphData(graphData)
+            .nodeAutoColorBy('group')
+            .nodeColor(node => colors[node.group] || '#ffffff')
+            .nodeResolution(32)
+            .linkColor(() => 'rgba(255, 255, 255, 0.2)')
+            .linkWidth(1);
+    </script>
+</body>
+</html>

@@ -1,0 +1,30 @@
+{
+  "name": "cloneforge_graph",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Alfredo2738/CloneForge_Graph.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Alfredo2738/CloneForge_Graph/issues"
+  },
+  "homepage": "https://github.com/Alfredo2738/CloneForge_Graph#readme",
+  "dependencies": {
+    "3d-force-graph": "^1.79.1",
+    "3d-force-graph-ar": "^1.10.0",
+    "3d-force-graph-vr": "^3.1.1",
+    "aframe": "^1.7.1",
+    "ar.js": "^2.2.2",
+    "three": "^0.183.2",
+    "three-spritetext": "^1.10.0"
+  }
+}
