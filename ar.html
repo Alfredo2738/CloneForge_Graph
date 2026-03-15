@@ -6,10 +6,11 @@
     <title>CloneForge AR Graph</title>
     <link rel="stylesheet" href="style.css">
     
-    <!-- AR Dependencies (Local) -->
+    <!-- Native WebXR Passthrough Dependencies -->
+    <!-- Native WebXR Passthrough Dependencies -->
     <script src="node_modules/aframe/dist/aframe-master.min.js"></script>
-    <script src="node_modules/ar.js/aframe/build/aframe-ar.js"></script>
-    <script src="node_modules/3d-force-graph-ar/dist/3d-force-graph-ar.min.js"></script>
+    <script src="node_modules/3d-force-graph-vr/dist/3d-force-graph-vr.min.js"></script>
+    <script src="node_modules/three-spritetext/dist/three-spritetext.min.js"></script>
     
 </head>
 <body>
@@ -32,7 +33,8 @@
 
         <div id="info-panel" class="visible">
             <h2 id="node-title">AR Mode Enabled</h2>
-            <div id="node-desc">Please grant camera permissions if prompted to view the graph in Augmented Reality. Look for the Hiro marker.</div>
+            <h4>AR Passthrough Ready</h4>
+            <p>Click the "Enter AR" button on your headset to view the graph in your physical space!</p>
         </div>
         
     </div>
@@ -48,13 +50,35 @@
 
         const elem = document.getElementById('graph-container');
 
-        const Graph = ForceGraphAR({ markerId: 'hiro' })(elem)
+        // Use the VR graph library, which is built on A-Frame and supports WebXR
+        const Graph = ForceGraphVR()
+          (document.getElementById('graph-container'))
             .graphData(graphData)
             .nodeAutoColorBy('group')
-            .nodeColor(node => colors[node.group] || '#ffffff')
-            .nodeResolution(32)
-            .linkColor(() => 'rgba(255, 255, 255, 0.5)')
-            .linkWidth(2);
+            .nodeRelSize(8)
+            .linkOpacity(0.3)
+            .linkWidth(1)
+            .linkDirectionalParticles(2)
+            .linkDirectionalParticleWidth(1.5)
+            .nodeLabel(node => `${node.id}: ${node.description}`)
+            // Position the graph comfortably in front of the user for AR passthrough
+            .nodeThreeObject(node => {
+                const sprite = new SpriteText(node.id);
+                sprite.color = colors[node.group] || '#ffffff'; // Use node group color
+                sprite.textHeight = 4;
+                return sprite;
+            });
+            
+        // Wait for the A-Frame scene to initialize, then configure it for AR Passthrough
+        setTimeout(() => {
+            const sceneEl = document.querySelector('a-scene');
+            if (sceneEl) {
+                // Remove default background to allow camera passthrough
+                sceneEl.setAttribute('background', 'transparent: true');
+                // Configure WebXR to request an AR session
+                sceneEl.setAttribute('webxr', 'optionalFeatures: hit-test, local-floor; mode: ar');
+            }
+        }, 500);
     </script>
 </body>
 </html>
