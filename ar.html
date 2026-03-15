@@ -48,6 +48,10 @@
             5: '#9B51E0', 6: '#F2994A', 7: '#56CCF2', 8: '#EB5757'
         };
 
+        const infoPanel = document.getElementById('info-panel');
+        const nodeTitle = document.getElementById('node-title');
+        const nodeDesc = document.getElementById('node-desc');
+
         const elem = document.getElementById('graph-container');
 
         // Use the VR graph library, which is built on A-Frame and supports WebXR
@@ -63,10 +67,31 @@
             .nodeLabel(node => `${node.id}: ${node.description}`)
             // Position the graph comfortably in front of the user for AR passthrough
             .nodeThreeObject(node => {
-                const sprite = new SpriteText(node.id);
+                const sprite = new SpriteText(node.label);
                 sprite.color = colors[node.group] || '#ffffff'; // Use node group color
                 sprite.textHeight = 4;
                 return sprite;
+            })
+            .onNodeClick(node => {
+                // Update UI on click
+                nodeTitle.innerText = node.label;
+                nodeTitle.style.color = colors[node.group] || '#ffffff';
+                nodeDesc.innerText = node.description;
+                infoPanel.classList.add('visible');
+
+                // Dynamically move the graph to center the clicked node directly in front of the headset
+                const graphEl = document.querySelector('[forcegraph]');
+                if (graphEl) {
+                    graphEl.setAttribute('animation', `property: position; to: ${-node.x} ${-node.y + 1.6} ${-node.z - 40}; dur: 2000; easing: easeOutCubic`);
+                }
+            })
+            .onNodeHover(node => {
+                if(node) {
+                     nodeTitle.innerText = node.label;
+                     nodeTitle.style.color = colors[node.group] || '#ffffff';
+                     nodeDesc.innerText = node.description;
+                     infoPanel.classList.add('visible');
+                }
             });
             
         // Wait for the A-Frame scene to initialize, then configure it for AR Passthrough
@@ -75,6 +100,8 @@
             if (sceneEl) {
                 // Remove default background to allow camera passthrough
                 sceneEl.setAttribute('background', 'transparent: true');
+                // Force the WebXR enter button to trigger AR Mode instead of VR
+                sceneEl.setAttribute('xr-mode-ui', 'XRMode: ar');
                 // Configure WebXR to request an AR session
                 sceneEl.setAttribute('webxr', 'optionalFeatures: hit-test, local-floor; mode: ar');
             }
