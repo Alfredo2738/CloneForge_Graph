@@ -106,7 +106,8 @@
                      nodeDesc.innerText = node.description;
                      infoPanel.classList.add('visible');
                 }
-            });
+            })
+            .enablePointerInteraction(true);
             
         // Configure force physics to match the 3D mode and prevent node clumping
         Graph.d3Force('charge').strength(-150);
@@ -122,8 +123,14 @@
                 sceneEl.setAttribute('vr-mode-ui', 'enterModeButton: #enter-ar');
                 // Configure WebXR to request an AR session and local floor tracking
                 sceneEl.setAttribute('webxr', 'optionalFeatures: hit-test, local-floor; mode: ar;');
-                // To allow users without controllers to click in AR, we could add a cursor 
-                sceneEl.setAttribute('cursor', 'rayOrigin: mouse;');
+                // Add a cursor entity specifically inside the camera for mobile AR gazing/tapping
+                const camera = document.querySelector('[camera]');
+                if (camera) {
+                    const cursor = document.createElement('a-entity');
+                    cursor.setAttribute('cursor', 'fuse: false; rayOrigin: mouse;');
+                    cursor.setAttribute('raycaster', 'objects: [forcegraph]');
+                    camera.appendChild(cursor);
+                }
 
                 // Move the entire graph slightly forward and down
                 const graphEl = document.querySelector('[forcegraph]');
