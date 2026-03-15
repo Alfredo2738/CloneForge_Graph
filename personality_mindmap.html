@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Personality Archetypes Mind Map</title>
+    <!-- Include ECharts -->
+    <script src="https://cdn.jsdelivr.net/npm/echarts/dist/echarts.min.js"></script>
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #f7f9fc;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+        #mindmap {
+            width: 100vw;
+            height: 100vh;
+        }
+        #ui-overlay {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            max-width: 400px;
+            z-index: 10;
+            backdrop-filter: blur(5px);
+        }
+        h1 { margin: 0 0 10px 0; font-size: 1.4rem; color: #2c3e50; }
+        p { margin: 5px 0; font-size: 0.9rem; color: #555; line-height: 1.4; }
+        .legend { margin-top: 15px; display: flex; flex-direction: column; gap: 8px; font-size: 0.85rem; }
+        .legend-item { display: flex; align-items: center; gap: 8px; }
+        .indicator { width: 14px; height: 14px; border-radius: 50%; }
+        .nav-link {
+            display: inline-block;
+            margin-top: 15px;
+            text-decoration: none;
+            color: #3498db;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+        .nav-link:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <div id="ui-overlay">
+        <h1>Personality Archetypes Map</h1>
+        <p>Explore the intricate web of human behavior across 5 distinct levels derived from major psychological frameworks.</p>
+        <p><strong>Controls:</strong> Scroll to zoom, drag to pan, click nodes to expand/collapse.</p>
+        <div class="legend">
+            <div class="legend-item"><div class="indicator" style="background: #3498db;"></div><span>Archetypes / Neutral (Blue)</span></div>
+            <div class="legend-item"><div class="indicator" style="background: #2ecc71;"></div><span>Positive Valences / Strengths (Green)</span></div>
+            <div class="legend-item"><div class="indicator" style="background: #e74c3c;"></div><span>Negative Valences / Weaknesses (Red)</span></div>
+            <div class="legend-item"><div class="indicator" style="background: #9b59b6;"></div><span>Examples / Edge Cases (Purple)</span></div>
+            <div class="legend-item"><div class="indicator" style="background: #f1c40f;"></div><span>Implications (Yellow)</span></div>
+        </div>
+        <a href="index.html" class="nav-link">← Back to 3D Spatial Graph</a>
+    </div>
+
+    <!-- Container for ECharts -->
+    <div id="mindmap"></div>
+
+    <script>
+        // Define common styles
+        const cArchetype = '#3498db';
+        const cPositive = '#2ecc71';
+        const cNegative = '#e74c3c';
+        const cExamples = '#9b59b6';
+        const cImplications = '#f1c40f';
+
+        function nodeStyle(color) {
+            return {
+                itemStyle: { color: color, borderColor: '#fff', borderWidth: 2 }
+            };
+        }
+
+        // Complete 5-Level Data Structure
+        const mindMapData = {
+            name: 'Personality\nArchetypes',
+            ...nodeStyle('#2c3e50'),
+            symbolSize: 22,
+            children: [
+                // ----------------------------------------------------
+                // BRANCH 1: JUNGIAN ARCHETYPES
+                // ----------------------------------------------------
+                {
+                    name: 'Jungian Archetypes\n(Collective Unconscious)',
+                    ...nodeStyle(cArchetype),
+                    children: [
+                        { name: 'Persona\n(Social Mask)', ...nodeStyle(cArchetype) },
+                        {
+                            name: 'Shadow\n(Repressed Self)',
+                            ...nodeStyle(cArchetype),
+                            children: [
+                                {
+                                    name: 'Positive Valences\n(Integration)',
+                                    ...nodeStyle(cPositive),
+                                    children: [
+                                        { name: 'Strengths:\nCreativity, Self-Awareness', ...nodeStyle(cPositive) },
+                                        { name: 'Variation:\nProductive Rebellion', ...nodeStyle(cPositive) }
+                                    ]
+                                },
+                                {
+                                    name: 'Negative Valences\n(Projection)',
+                                    ...nodeStyle(cNegative),
+                                    children: [
+                                        {
+                                            name: 'Weaknesses:\nConflict, Denial',
+                                            ...nodeStyle(cNegative),
+                                            children: [
+                                                { name: 'Real-Life Ex:\nScapegoating in Groups', ...nodeStyle(cExamples) },
+                                                { name: 'Fictional Ex:\nDr. Jekyll & Mr. Hyde', ...nodeStyle(cExamples) },
+                                                { name: 'Therapy Implication:\nRequires Shadow Work', ...nodeStyle(cImplications) },
+                                                { name: 'Edge Case:\nTrauma-induced fracturing', ...nodeStyle(cNegative) }
+                                            ]
+                                        }
+                                    ]
+                                },
+                                { name: 'Core Motivation:\nWholeness', ...nodeStyle(cArchetype) },
+                                { name: 'Basic Fear:\nBeing consumed by darkness', ...nodeStyle(cArchetype) }
+                            ]
+                        },
+                        { name: 'Anima/Animus\n(Inner Contra-sexual)', ...nodeStyle(cArchetype) },
+                        { name: 'Self\n(Unifying Center)', ...nodeStyle(cArchetype) }
+                    ]
+                },
+
+                // ----------------------------------------------------
+                // BRANCH 2: ENNEAGRAM
+                // ----------------------------------------------------
+                {
+                    name: 'Enneagram\n(Motivations & Fears)',
+                    ...nodeStyle(cArchetype),
+                    children: [
+                        {
+                            name: 'Type 1\n(Reformer)',
+                            ...nodeStyle(cArchetype),
+                            children: [
+                                {
+                                    name: 'Positive Valences\n(Principled)',
+                                    ...nodeStyle(cPositive),
+                                    children: [
+                                        { name: 'Strengths:\nWisdom, Serenity, Integrity', ...nodeStyle(cPositive) }
+                                    ]
+                                },
+                                {
+                                    name: 'Negative Valences\n(Rigid)',
+                                    ...nodeStyle(cNegative),
+                                    children: [
+                                        { name: 'Weaknesses:\nAnger, Resentment', ...nodeStyle(cNegative) }
+                                    ]
+                                },
+                                { name: 'Core Motivation:\nTo be good & balanced', ...nodeStyle(cArchetype) },
+                                { name: 'Basic Fear:\nBeing corrupt or defective', ...nodeStyle(cArchetype) }
+                            ]
+                        },
+                        {
+                            name: 'Type 2\n(Helper)',
+                            ...nodeStyle(cArchetype),
+                            children: [
+                                { name: 'Core Motivation:\nLove and support', ...nodeStyle(cArchetype) },
+                                {
+                                    name: 'Negative Valences',
+                                    ...nodeStyle(cNegative),
+                                    children: [
+                                        {
+                                            name: 'Weaknesses:\nOver-involved, Manipulative',
+                                            ...nodeStyle(cNegative),
+                                            children: [
+                                                { name: 'Real-Life Ex:\nToxic Enablers', ...nodeStyle(cExamples) },
+                                                { name: 'Fictional Ex:\nHermione Granger (Early)', ...nodeStyle(cExamples) },
+                                                { name: 'Relationship Implication:\nRisks Codependency', ...nodeStyle(cImplications) },
+                                                { name: 'Societal Role:\nCaregiving Burnout', ...nodeStyle(cImplications) }
+                                            ]
+                                        }
+                                    ]
+                                },
+                                { name: 'Basic Fear:\nBeing unwanted', ...nodeStyle(cArchetype) }
+                            ]
+                        },
+                        { name: 'Type 3 (Achiever)', ...nodeStyle(cArchetype) },
+                        { name: 'Types 4-9 (Various)', ...nodeStyle(cArchetype) }
+                    ]
+                },
+
+                // ----------------------------------------------------
+                // BRANCH 3: MYERS-BRIGGS (MBTI)
+                // ----------------------------------------------------
+                {
+                    name: 'MBTI\n(Perception & Decision)',
+                    ...nodeStyle(cArchetype),
+                    children: [
+                        { name: 'I vs E\n(Energy Source)', ...nodeStyle(cArchetype) },
+                        { name: 'S vs N\n(Information Gather)', ...nodeStyle(cArchetype) },
+                        {
+                            name: 'T vs F\n(Decision Making)',
+                            ...nodeStyle(cArchetype),
+                            children: [
+                                {
+                                    name: 'Thinking (T)',
+                                    ...nodeStyle(cArchetype),
+                                    children: [
+                                        { name: 'Strengths:\nObjective, Logical', ...nodeStyle(cPositive) },
+                                        { name: 'Weaknesses:\nDetachment, Insensitivity', ...nodeStyle(cNegative) },
+                                        { name: 'Subtype Var:\nT-Assertive vs T-Turbulent', ...nodeStyle(cArchetype) },
+                                        {
+                                            name: 'Emotion Mod:\nSuppression of feeling',
+                                            ...nodeStyle(cNegative),
+                                            children: [
+                                                { name: 'Real-Life Ex:\nStoic Leaders', ...nodeStyle(cExamples) },
+                                                { name: 'Fictional Ex:\nSpock (Star Trek)', ...nodeStyle(cExamples) },
+                                                { name: 'Relationship Implication:\nCommunication Gap', ...nodeStyle(cImplications) }
+                                            ]
+                                        }
+                                    ]
+                                },
+                                {
+                                    name: 'Feeling (F)',
+                                    ...nodeStyle(cArchetype),
+                                    children: [
+                                        { name: 'Strengths:\nHarmonious, Empathetic', ...nodeStyle(cPositive) },
+                                        { name: 'Weaknesses:\nIndecisiveness, Bias', ...nodeStyle(cNegative) },
+                                        { name: 'Emotion Mod:\nAmplified sensitivity', ...nodeStyle(cPositive) }
+                                    ]
+                                }
+                            ]
+                        },
+                        { name: 'J vs P\n(Structure vs Flex)', ...nodeStyle(cArchetype) }
+                    ]
+                },
+
+                // ----------------------------------------------------
+                // BRANCH 4: BIG FIVE (OCEAN)
+                // ----------------------------------------------------
+                {
+                    name: 'Big Five Traits\n(OCEAN Model)',
+                    ...nodeStyle(cArchetype),
+                    children: [
+                        {
+                            name: 'Openness to\nExperience',
+                            ...nodeStyle(cArchetype),
+                            children: [
+                                {
+                                    name: 'High Openness\n(Innovative)',
+                                    ...nodeStyle(cPositive),
+                                    children: [
+                                        { name: 'Strengths:\nCurious, Creative', ...nodeStyle(cPositive) },
+                                        { name: 'Weaknesses:\nImpractical, Unfocused', ...nodeStyle(cNegative) },
+                                        {
+                                            name: 'Valence Mods',
+                                            ...nodeStyle(cArchetype),
+                                            children: [
+                                                { name: 'Real-Life Ex:\nAvant-garde Artists', ...nodeStyle(cExamples) },
+                                                { name: 'Career Fit:\nR&D, Design, Strategy', ...nodeStyle(cImplications) },
+                                                { name: 'Edge Case:\nOverwhelming divergent thought', ...nodeStyle(cNegative) }
+                                            ]
+                                        }
+                                    ]
+                                },
+                                {
+                                    name: 'Low Openness\n(Traditional)',
+                                    ...nodeStyle(cArchetype),
+                                    children: [
+                                        { name: 'Strengths:\nReliable, Grounded', ...nodeStyle(cPositive) },
+                                        { name: 'Weaknesses:\nResistant to Change', ...nodeStyle(cNegative) }
+                                    ]
+                                }
+                            ]
+                        },
+                        { name: 'Conscientiousness\n(Goal-oriented)', ...nodeStyle(cArchetype) },
+                        { name: 'Extraversion\n(Sociability)', ...nodeStyle(cArchetype) },
+                        { name: 'Agreeableness\n(Cooperation)', ...nodeStyle(cArchetype) },
+                        {
+                            name: 'Neuroticism\n(Emotional Stability)',
+                            ...nodeStyle(cArchetype),
+                            children: [
+                                { name: 'High Neuroticism:\nAnxiety prone, Vigilant', ...nodeStyle(cNegative) },
+                                { name: 'Low Neuroticism:\nResilient, Calm', ...nodeStyle(cPositive) }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        };
+
+        // Initialize ECharts instance
+        const chartDom = document.getElementById('mindmap');
+        const myChart = echarts.init(chartDom);
+        let option;
+
+        option = {
+            tooltip: {
+                trigger: 'item',
+                triggerOn: 'mousemove'
+            },
+            toolbox: {
+                show: true,
+                feature: {
+                    saveAsImage: {
+                        name: 'Personality_Archetypes_MindMap',
+                        title: 'Save as Image',
+                        backgroundColor: '#f7f9fc'
+                    }
+                },
+                right: 20,
+                top: 20
+            },
+            series: [
+                {
+                    type: 'tree',
+                    data: [mindMapData],
+                    top: '5%',
+                    left: '12%',
+                    bottom: '5%',
+                    right: '25%',
+                    symbolSize: 10,
+                    label: {
+                        position: 'left',
+                        verticalAlign: 'middle',
+                        align: 'right',
+                        fontSize: 13,
+                        fontWeight: 'bold',
+                        color: '#333',
+                        backgroundColor: '#fff',
+                        padding: [4, 6],
+                        borderRadius: 4,
+                        shadowBlur: 3,
+                        shadowColor: 'rgba(0,0,0,0.1)'
+                    },
+                    leaves: {
+                        label: {
+                            position: 'right',
+                            verticalAlign: 'middle',
+                            align: 'left',
+                            fontWeight: 'normal',
+                            color: '#444'
+                        }
+                    },
+                    emphasis: {
+                        focus: 'descendant'
+                    },
+                    expandAndCollapse: true,
+                    animationDuration: 550,
+                    animationDurationUpdate: 750,
+                    initialTreeDepth: 3, // Start with levels 0, 1, 2, 3 expanded
+                    lineStyle: {
+                        color: '#bdc3c7',
+                        width: 1.5,
+                        curveness: 0.5
+                    }
+                }
+            ]
+        };
+
+        option && myChart.setOption(option);
+
+        // Handle responsive resize
+        window.addEventListener('resize', () => {
+            myChart.resize();
+        });
+    </script>
+</body>
+</html>

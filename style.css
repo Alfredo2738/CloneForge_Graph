@@ -1,0 +1,163 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Inter:wght@400;500&display=swap');
+
+:root {
+  --bg-gradient: linear-gradient(135deg, #090B10 0%, #151928 100%);
+  --panel-bg: rgba(20, 24, 39, 0.6);
+  --panel-border: rgba(255, 255, 255, 0.1);
+  --text-main: #FFFFFF;
+  --text-muted: #A0AABF;
+  --accent-color: #00E5FF; /* Cyan */
+  --accent-glow: rgba(0, 229, 255, 0.3);
+  --font-heading: 'Outfit', sans-serif;
+  --font-body: 'Inter', sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  margin: 0;
+  overflow: hidden;
+  background: var(--bg-gradient);
+  font-family: var(--font-body);
+  color: var(--text-main);
+  height: 100vh;
+  width: 100vw;
+}
+
+#graph-container {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 1; /* Lowest z-index */
+}
+
+/* Glassmorphism overlays */
+#ui-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none; /* Let clicks pass through to graph */
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 40px;
+}
+
+/* Header */
+header {
+  pointer-events: auto; /* Re-enable pointer events for the UI elements */
+  display: inline-block;
+}
+
+.title-container {
+  background: var(--panel-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--panel-border);
+  border-radius: 16px;
+  padding: 24px 32px;
+  max-width: 500px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+h1 {
+  font-family: var(--font-heading);
+  font-weight: 800;
+  font-size: 2.5rem;
+  letter-spacing: -0.5px;
+  background: linear-gradient(90deg, #FFFFFF, var(--accent-color));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 8px;
+}
+
+p.subtitle {
+  color: var(--text-muted);
+  font-size: 1.1rem;
+  line-height: 1.5;
+  font-weight: 300;
+}
+
+/* Info Panel for Node Details */
+#info-panel {
+  pointer-events: auto;
+  align-self: flex-end;
+  background: var(--panel-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--panel-border);
+  border-radius: 16px;
+  padding: 32px;
+  width: 400px;
+  min-height: 200px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 0 20px var(--accent-glow);
+  transform: translateX(120%);
+  transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+#info-panel.visible {
+  transform: translateX(0);
+}
+
+#node-title {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: 1.8rem;
+  color: var(--accent-color);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding-bottom: 12px;
+}
+
+#node-desc {
+  font-size: 1rem;
+  line-height: 1.6;
+  color: #E2E8F0;
+}
+
+.instruction-toast {
+  position: absolute;
+  bottom: 40px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(8px);
+  padding: 12px 24px;
+  border-radius: 30px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  pointer-events: auto;
+  letter-spacing: 0.5px;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% { opacity: 0.6; }
+  50% { opacity: 1; }
+  100% { opacity: 0.6; }
+}
+
+/* Custom generic graph tooltip styling overrides since 3d-force-graph uses an injected div */
+.scene-tooltip {
+  font-family: var(--font-body);
+  background-color: rgba(10, 15, 26, 0.9) !important;
+  border: 1px solid var(--accent-color) !important;
+  border-radius: 8px !important;
+  padding: 8px 16px !important;
+  color: white !important;
+  font-size: 14px !important;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5) !important;
+  pointer-events: none;
+}
