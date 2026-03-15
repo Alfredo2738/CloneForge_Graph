@@ -41,7 +41,6 @@
         
     </div>
 
-    <!-- Data Module -->
     <script type="module">
         import { graphData } from './data.js';
 
@@ -63,26 +62,103 @@
 
         const elem = document.getElementById('graph-container');
 
+        // Track selected and hovered states
+        let hoverNode = null;
+        let selectedNode = null;
+        const highlightNodes = new Set();
+        const highlightLinks = new Set();
+
+        // Pre-calculate node neighbors
+        graphData.links.forEach(link => {
+            const a = graphData.nodes.find(n => n.id === link.source) || link.source;
+            const b = graphData.nodes.find(n => n.id === link.target) || link.target;
+            if (typeof a === 'object' && typeof b === 'object') {
+                if (!a.neighbors) a.neighbors = [];
+                if (!b.neighbors) b.neighbors = [];
+                a.neighbors.push(b);
+                b.neighbors.push(a);
+                if (!a.links) a.links = [];
+                if (!b.links) b.links = [];
+                a.links.push(link);
+                b.links.push(link);
+            }
+        });
+
+        // Iridescent colors for particles
+        const iridescentColors = ['#00FFFF', '#FF00FF', '#FFFF00', '#00FFCC'];
+
         const Graph = ForceGraphVR()(elem)
             .graphData(graphData)
             .nodeAutoColorBy('group')
-            .nodeColor(node => colors[node.group] || '#ffffff')
+            .nodeColor(node => {
+                if (highlightNodes.size > 0 && !highlightNodes.has(node)) {
+                    return 'rgba(255,255,255,0.1)';
+                }
+                return colors[node.group] || '#ffffff';
+            })
             .nodeResolution(32)
             .nodeVal(node => node.val || 1)
             .linkOpacity(0.3)
-            .linkWidth(1)
-            .linkColor(() => 'rgba(255, 255, 255, 0.2)')
+            .linkWidth(link => highlightLinks.has(link) ? 2 : 1)
+            .linkColor(link => {
+                if (highlightNodes.size > 0 && !highlightLinks.has(link)) {
+                    return 'rgba(255, 255, 255, 0.05)';
+                }
+                return 'rgba(255, 255, 255, 0.3)';
+            })
+            .linkDirectionalArrowLength(3)
+            .linkDirectionalArrowRelPos(1)
             .linkDirectionalParticles(2)
-            .linkDirectionalParticleWidth(1.5)
+            .linkDirectionalParticleWidth(link => highlightLinks.has(link) ? 3 : 1.5)
+            .linkDirectionalParticleColor(() => iridescentColors[Math.floor(Math.random() * iridescentColors.length)])
             .linkDirectionalParticleSpeed(d => d.value * 0.005)
             .nodeThreeObjectExtend(true)
             .nodeThreeObject(node => {
+                const group = new THREE.Group();
                 const nodeVal = node.val || 1;
+                
                 const sprite = new SpriteText(node.label);
-                sprite.color = 'rgba(255, 255, 255, 0.8)';
-                sprite.textHeight = Math.max(2, nodeVal * 0.4);
+                sprite.color = colors[node.group] || '#ffffff';
+                sprite.backgroundColor = 'rgba(0, 0, 0, 0.8)';
+                sprite.borderColor = sprite.color;
+                sprite.borderWidth = 1;
+                sprite.borderRadius = 4;
+                sprite.padding = [4, 2];
+                
+                let targetTextHeight = Math.max(2, nodeVal * 0.4);
+                // Emphasize label if it is the selected node
+                if (node === selectedNode) {
+                    targetTextHeight *= 1.5;
+                    sprite.fontWeight = 'bold';
+                } else if (highlightNodes.has(node)) {
+                    targetTextHeight *= 1.2;
+                } else if (highlightNodes.size > 0) {
+                    // Hide or shrink labels heavily if not highlighted
+                    targetTextHeight *= 0.1;
+                    sprite.color = 'rgba(255,255,255,0.1)';
+                    sprite.backgroundColor = 'rgba(0,0,0,0)';
+                    sprite.borderColor = 'rgba(0,0,0,0)';
+                }
+
+                sprite.textHeight = targetTextHeight;
                 sprite.position.y = -(Math.cbrt(nodeVal) * 1.5 + sprite.textHeight);
-                return sprite;
+                group.add(sprite);
+
+                // Add a pulsing halo if this is the selected node
+                if (node === selectedNode) {
+                    const haloGeometry = new THREE.SphereGeometry(Math.cbrt(nodeVal) * 1.8, 32, 32);
+                    const haloMaterial = new THREE.MeshBasicMaterial({
+                        color: colors[node.group],
+                        transparent: true,
+                        opacity: 0.3,
+                        blending: THREE.AdditiveBlending
+                    });
+                    const haloMesh = new THREE.Mesh(haloGeometry, haloMaterial);
+                    haloMesh.name = 'halo';
+                    group.add(haloMesh);
+                }
+
+                return group;
             })
             .onNodeClick(node => {
                 // Update UI on click
@@ -107,32 +183,86 @@
                     // VR Base Camera is typically at (0, 1.6, 0).
                     // We want the node to be at (0, 1.6, -distance) relative to the user.
                     // Meaning the graph origin needs to shift.
-                    // Simple inverse translation logic: 
-                    // Graph pos = Head Pos (0, 1.6, 0) - Target Camera Pos (camPos)
                     const targetX = -camPos.x;
                     const targetY = 1.6 - camPos.y;
                     const targetZ = -camPos.z;
 
                     // Animate the graph to the new position
                     graphEl.setAttribute('animation', `property: position; to: ${targetX} ${targetY} ${targetZ}; dur: 2000; easing: easeOutCubic`);
-                    
-                    // To "look at" the node, the graph should be rotated so the node is between origin and the graph center.
-                    // This is more complex to animate consistently via A-Frame without rig hierarchy, 
-                    // so the translation alone achieves the 'zoom to node' effect perfectly.
                 }
+
+                selectedNode = node;
+                updateHighlight();
             })
             .onNodeHover(node => {
-                if(node) {
+                if (node !== hoverNode) {
+                    hoverNode = node;
+                    if (!selectedNode) {
+                        updateHighlight();
+                    }
+                }
+
+                if(node && !selectedNode) {
                      nodeTitle.innerText = node.label;
                      nodeTitle.style.color = colors[node.group] || '#ffffff';
                      nodeDesc.innerText = node.description;
                      infoPanel.classList.add('visible');
+                } else if (!node && !selectedNode) {
+                     infoPanel.classList.remove('visible');
                 }
+            })
+            .onBackgroundClick(() => {
+                selectedNode = null;
+                updateHighlight();
+                infoPanel.classList.remove('visible');
             });
 
-        // Configure force physics to match the 3D mode and prevent node clumping
+        // Highlight Update Logic Function
+        function updateHighlight() {
+            highlightNodes.clear();
+            highlightLinks.clear();
+
+            const targetNode = selectedNode || hoverNode;
+
+            if (targetNode) {
+                highlightNodes.add(targetNode);
+                if (targetNode.neighbors) {
+                    targetNode.neighbors.forEach(neighbor => highlightNodes.add(neighbor));
+                }
+                if (targetNode.links) {
+                    targetNode.links.forEach(link => highlightLinks.add(link));
+                }
+            }
+
+            Graph
+                .nodeColor(Graph.nodeColor())
+                .linkColor(Graph.linkColor())
+                .linkWidth(Graph.linkWidth())
+                .nodeThreeObject(Graph.nodeThreeObject());
+        }
+
+        // Configure force physics
         Graph.d3Force('charge').strength(-150);
         Graph.d3Force('link').distance(link => link.source.id === "CloneForge" ? 100 : 50);
+
+        // Animate the Halo in VR
+        let startTime = Date.now();
+        // Since ForceGraphVR doesn't expose onEngineTick directly like the 3D version, 
+        // we use standard requestAnimationFrame for scene traversal patching
+        function updateHalo() {
+            const time = Date.now() - startTime;
+            const sceneEl = document.querySelector('a-scene');
+            if (sceneEl && sceneEl.object3D) {
+                sceneEl.object3D.traverse((obj) => {
+                    if (obj.name === 'halo') {
+                        const scale = 1 + Math.sin(time / 200) * 0.1;
+                        obj.scale.set(scale, scale, scale);
+                    }
+                });
+            }
+            requestAnimationFrame(updateHalo);
+        }
+        updateHalo();
 
     </script>
 </body>
