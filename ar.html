@@ -66,17 +66,23 @@
           (document.getElementById('graph-container'))
             .graphData(graphData)
             .nodeAutoColorBy('group')
-            .nodeRelSize(8)
+            .nodeColor(node => colors[node.group] || '#ffffff')
+            .nodeResolution(32)
+            .nodeVal(node => node.val || 1)
             .linkOpacity(0.3)
             .linkWidth(1)
-            .nodeLabel(node => `${node.id}: ${node.description}`)
+            .linkColor(() => 'rgba(255, 255, 255, 0.2)')
+            .linkDirectionalParticles(2)
+            .linkDirectionalParticleWidth(1.5)
+            .linkDirectionalParticleSpeed(d => d.value * 0.005)
             .nodeThreeObjectExtend(true)
             // Position the graph comfortably in front of the user for AR passthrough
             .nodeThreeObject(node => {
+                const nodeVal = node.val || 1;
                 const sprite = new SpriteText(node.label);
                 sprite.color = 'rgba(255, 255, 255, 0.8)';
-                sprite.textHeight = 4;
-                sprite.position.y = -8; // Position below the sphere
+                sprite.textHeight = Math.max(2, nodeVal * 0.4);
+                sprite.position.y = -(Math.cbrt(nodeVal) * 1.5 + sprite.textHeight);
                 return sprite;
             })
             .onNodeClick(node => {
@@ -89,7 +95,8 @@
                 // Dynamically move the graph to center the clicked node directly in front of the headset
                 const graphEl = document.querySelector('[forcegraph]');
                 if (graphEl) {
-                    graphEl.setAttribute('animation', `property: position; to: ${-node.x} ${-node.y + 1.6} ${-node.z - 40}; dur: 2000; easing: easeOutCubic`);
+                    // Animate the graph so the clicked node sits closely in front of the user (z=-2, y=1.6)
+                    graphEl.setAttribute('animation', `property: position; to: ${-node.x} ${1.6 - node.y} ${-2 - node.z}; dur: 2000; easing: easeOutCubic`);
                 }
             })
             .onNodeHover(node => {
@@ -101,18 +108,34 @@
                 }
             });
             
-        // Wait for the A-Frame scene to initialize, then configure it for AR Passthrough
+        // Configure force physics to match the 3D mode and prevent node clumping
+        Graph.d3Force('charge').strength(-150);
+        Graph.d3Force('link').distance(link => link.source.id === "CloneForge" ? 100 : 50);
+
+        // Instantly configure the dynamically generated A-Frame scene for AR Passthrough
         setTimeout(() => {
             const sceneEl = document.querySelector('a-scene');
             if (sceneEl) {
                 // Remove default background to allow camera passthrough
                 sceneEl.setAttribute('background', 'transparent: true');
-                // Force the WebXR enter button to trigger AR Mode instead of VR
-                sceneEl.setAttribute('xr-mode-ui', 'XRMode: ar');
+                // The correct A-Frame property to force the AR button is vr-mode-ui
+                sceneEl.setAttribute('vr-mode-ui', 'enterModeButton: #enter-ar');
                 // Configure WebXR to request an AR session and local floor tracking
-                sceneEl.setAttribute('webxr', 'optionalFeatures: hit-test, local-floor;');
+                sceneEl.setAttribute('webxr', 'optionalFeatures: hit-test, local-floor; mode: ar;');
+                // To allow users without controllers to click in AR, we could add a cursor 
+                sceneEl.setAttribute('cursor', 'rayOrigin: mouse;');
+
+                // Move the entire graph slightly forward and down
+                const graphEl = document.querySelector('[forcegraph]');
+                if (graphEl) {
+                    graphEl.setAttribute('position', '0 1 -2');
+                }
+
+                // Manually trigger the physics engine to 'warm up' so nodes aren't clumped
+                Graph.d3ReheatSimulation();
             }
-        }, 500);
+        }, 100);
+
     </script>
 </body>
 </html>

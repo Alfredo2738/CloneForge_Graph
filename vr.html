@@ -87,7 +87,8 @@
                 // Dynamically move the graph to center the clicked node directly in front of the headset
                 const graphEl = document.querySelector('[forcegraph]');
                 if (graphEl) {
-                    graphEl.setAttribute('animation', `property: position; to: ${-node.x} ${-node.y + 1.6} ${-node.z - 40}; dur: 2000; easing: easeOutCubic`);
+                    // Animate the graph so the clicked node sits closely in front of the user (z=-2, y=1.6)
+                    graphEl.setAttribute('animation', `property: position; to: ${-node.x} ${1.6 - node.y} ${-2 - node.z}; dur: 2000; easing: easeOutCubic`);
                 }
             })
             .onNodeHover(node => {
@@ -98,6 +99,11 @@
                      infoPanel.classList.add('visible');
                 }
             });
+
+        // Configure force physics to match the 3D mode and prevent node clumping
+        Graph.d3Force('charge').strength(-150);
+        Graph.d3Force('link').distance(link => link.source.id === "CloneForge" ? 100 : 50);
+
     </script>
 </body>
 </html>
