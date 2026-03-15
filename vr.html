@@ -66,15 +66,22 @@
         const Graph = ForceGraphVR()(elem)
             .graphData(graphData)
             .nodeAutoColorBy('group')
-            .nodeRelSize(8)
+            .nodeColor(node => colors[node.group] || '#ffffff')
+            .nodeResolution(32)
+            .nodeVal(node => node.val || 1)
             .linkOpacity(0.3)
             .linkWidth(1)
+            .linkColor(() => 'rgba(255, 255, 255, 0.2)')
+            .linkDirectionalParticles(2)
+            .linkDirectionalParticleWidth(1.5)
+            .linkDirectionalParticleSpeed(d => d.value * 0.005)
             .nodeThreeObjectExtend(true)
             .nodeThreeObject(node => {
+                const nodeVal = node.val || 1;
                 const sprite = new SpriteText(node.label);
                 sprite.color = 'rgba(255, 255, 255, 0.8)';
-                sprite.textHeight = 4;
-                sprite.position.y = -8; // Position below the sphere
+                sprite.textHeight = Math.max(2, nodeVal * 0.4);
+                sprite.position.y = -(Math.cbrt(nodeVal) * 1.5 + sprite.textHeight);
                 return sprite;
             })
             .onNodeClick(node => {
@@ -84,11 +91,34 @@
                 nodeDesc.innerText = node.description;
                 infoPanel.classList.add('visible');
 
-                // Dynamically move the graph to center the clicked node directly in front of the headset
+                // In VR, the camera pose is locked by WebXR headset tracking.
+                // To simulate moving the camera TO the node, we inversely move the GRAPH towards the camera.
                 const graphEl = document.querySelector('[forcegraph]');
                 if (graphEl) {
-                    // Animate the graph so the clicked node sits closely in front of the user (z=-2, y=1.6)
-                    graphEl.setAttribute('animation', `property: position; to: ${-node.x} ${1.6 - node.y} ${-2 - node.z}; dur: 2000; easing: easeOutCubic`);
+                    // Set a comfortable viewing distance
+                    const distance = 40;
+                    
+                    // Create an ideal camera position if we were to look at the node from 'distance' away along its vector
+                    const distRatio = 1 + distance / Math.hypot(node.x, node.y, node.z);
+                    const camPos = node.x || node.y || node.z
+                        ? { x: node.x * distRatio, y: node.y * distRatio, z: node.z * distRatio }
+                        : { x: 0, y: 0, z: distance };
+                        
+                    // VR Base Camera is typically at (0, 1.6, 0).
+                    // We want the node to be at (0, 1.6, -distance) relative to the user.
+                    // Meaning the graph origin needs to shift.
+                    // Simple inverse translation logic: 
+                    // Graph pos = Head Pos (0, 1.6, 0) - Target Camera Pos (camPos)
+                    const targetX = -camPos.x;
+                    const targetY = 1.6 - camPos.y;
+                    const targetZ = -camPos.z;
+
+                    // Animate the graph to the new position
+                    graphEl.setAttribute('animation', `property: position; to: ${targetX} ${targetY} ${targetZ}; dur: 2000; easing: easeOutCubic`);
+                    
+                    // To "look at" the node, the graph should be rotated so the node is between origin and the graph center.
+                    // This is more complex to animate consistently via A-Frame without rig hierarchy, 
+                    // so the translation alone achieves the 'zoom to node' effect perfectly.
                 }
             })
             .onNodeHover(node => {
