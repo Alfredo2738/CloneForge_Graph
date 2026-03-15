@@ -52,6 +52,13 @@
         const nodeTitle = document.getElementById('node-title');
         const nodeDesc = document.getElementById('node-desc');
 
+        // Monkey-patch Three.js to completely disable Sprite raycasting.
+        // This solves the persistent "Raycaster.camera needs to be set" error 
+        // that breaks A-Frame's cursor interaction with SpriteText labels.
+        if (typeof THREE !== 'undefined' && THREE.Sprite) {
+            THREE.Sprite.prototype.raycast = function() {};
+        }
+
         const elem = document.getElementById('graph-container');
 
         // Use the VR graph library, which is built on A-Frame and supports WebXR
@@ -62,14 +69,14 @@
             .nodeRelSize(8)
             .linkOpacity(0.3)
             .linkWidth(1)
-            .linkDirectionalParticles(2)
-            .linkDirectionalParticleWidth(1.5)
             .nodeLabel(node => `${node.id}: ${node.description}`)
+            .nodeThreeObjectExtend(true)
             // Position the graph comfortably in front of the user for AR passthrough
             .nodeThreeObject(node => {
                 const sprite = new SpriteText(node.label);
-                sprite.color = colors[node.group] || '#ffffff'; // Use node group color
+                sprite.color = 'rgba(255, 255, 255, 0.8)';
                 sprite.textHeight = 4;
+                sprite.position.y = -8; // Position below the sphere
                 return sprite;
             })
             .onNodeClick(node => {
@@ -102,8 +109,8 @@
                 sceneEl.setAttribute('background', 'transparent: true');
                 // Force the WebXR enter button to trigger AR Mode instead of VR
                 sceneEl.setAttribute('xr-mode-ui', 'XRMode: ar');
-                // Configure WebXR to request an AR session
-                sceneEl.setAttribute('webxr', 'optionalFeatures: hit-test, local-floor; mode: ar');
+                // Configure WebXR to request an AR session and local floor tracking
+                sceneEl.setAttribute('webxr', 'optionalFeatures: hit-test, local-floor;');
             }
         }, 500);
     </script>

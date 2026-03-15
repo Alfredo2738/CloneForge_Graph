@@ -54,6 +54,13 @@
         const nodeTitle = document.getElementById('node-title');
         const nodeDesc = document.getElementById('node-desc');
 
+        // Monkey-patch Three.js to completely disable Sprite raycasting.
+        // This solves the persistent "Raycaster.camera needs to be set" error 
+        // that breaks A-Frame's cursor interaction with SpriteText labels.
+        if (typeof THREE !== 'undefined' && THREE.Sprite) {
+            THREE.Sprite.prototype.raycast = function() {};
+        }
+
         const elem = document.getElementById('graph-container');
 
         const Graph = ForceGraphVR()(elem)
@@ -62,12 +69,12 @@
             .nodeRelSize(8)
             .linkOpacity(0.3)
             .linkWidth(1)
-            .linkDirectionalParticles(2)
-            .linkDirectionalParticleWidth(1.5)
+            .nodeThreeObjectExtend(true)
             .nodeThreeObject(node => {
                 const sprite = new SpriteText(node.label);
-                sprite.color = colors[node.group] || '#ffffff';
+                sprite.color = 'rgba(255, 255, 255, 0.8)';
                 sprite.textHeight = 4;
+                sprite.position.y = -8; // Position below the sphere
                 return sprite;
             })
             .onNodeClick(node => {
